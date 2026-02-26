@@ -252,6 +252,12 @@ class DBApiClient {
                         val gleis = entry["gleis"]?.jsonPrimitive?.content ?: ""
                         val terminus = entry["terminus"]?.jsonPrimitive?.content ?: ""
                         
+                        // Filter: Only include trains that go towards the destination
+                        // Check if terminus contains destination name OR is a known terminus for this route
+                        if (!isTrainGoingToDestination(terminus, toStationName, toExtId)) {
+                            return@mapNotNull null
+                        }
+                        
                         // Get journeyId for potential detail lookup
                         val journeyId = entry["journeyId"]?.jsonPrimitive?.content ?: ""
                         
@@ -310,6 +316,34 @@ class DBApiClient {
         // Extract O= parameter (station name)
         val match = Regex("O=([^@]+)").find(stationId)
         return match?.groupValues?.get(1) ?: stationId
+    }
+    
+    /**
+     * Check if a train goes towards the destination
+     * Based on terminus (final destination) matching or known route patterns
+     */
+    private fun isTrainGoingToDestination(terminus: String, destinationName: String, destinationExtId: String): Boolean {
+        val terminusLower = terminus.lowercase()
+        val destLower = destinationName.lowercase()
+        
+        // Direct match: terminus contains destination name
+        if (terminusLower.contains(destLower) || destLower.contains(terminusLower)) {
+            return true
+        }
+        
+        // Known route patterns for Bodensee area
+        // Trains going to these termini will stop at intermediate stations
+        val knownRoutes = mapOf(
+            // Destination: Langenargen (8003524) - trains going east towards Lindau
+            "8003524" to listOf("lindau", "bregenz", "innsbruck", "münchen", "langenargen"),
+            // Destination: Friedrichshafen (8000112) - trains going west
+            "8000112" to listOf("friedrichshafen", "radolfzell", "singen", "konstanz", "basel", "karlsruhe", "ulm", "stuttgart"),
+            // Destination: Lindau (8000230)
+            "8000230" to listOf("lindau", "bregenz", "innsbruck", "münchen"),
+        )
+        
+        val validTermini = knownRoutes[destinationExtId] ?: emptyList()
+        return validTermini.any { terminusLower.contains(it) }
     }
     
     /**
