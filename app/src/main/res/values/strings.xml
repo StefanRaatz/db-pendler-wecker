@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DB Pendler Wecker</string>
+    <string name="widget_name">DB Pendler</string>
+    <string name="widget_description">Zeigt Zugverbindungen und ermöglicht das Stellen von Weckern</string>
+    
+    <!-- Stations -->
+    <string name="from_station">Von</string>
+    <string name="to_station">Nach</string>
+    <string name="swap_stations">Bahnhöfe tauschen</string>
+    <string name="search_station">Bahnhof suchen…</string>
+    
+    <!-- Connections -->
+    <string name="connections">Verbindungen</string>
+    <string name="no_connections">Keine Verbindungen gefunden</string>
+    <string name="loading">Wird geladen…</string>
+    <string name="refresh">Aktualisieren</string>
+    <string name="last_update">Aktualisiert: %1$s</string>
+    
+    <!-- Alarm -->
+    <string name="alarm_10_min">⏰ -10 Min</string>
+    <string name="alarm_15_min">⏰ -15 Min</string>
+    <string name="alarm_set">Wecker gestellt für %1$s</string>
+    <string name="alarm_cancelled">Wecker abgebrochen</string>
+    <string name="alarm_title">Zeit zum Aufbruch!</string>
+    <string name="alarm_message">%1$s fährt in %2$d Minuten</string>
+    
+    <!-- Permissions -->
+    <string name="permission_alarm_title">Exakte Alarme</string>
+    <string name="permission_alarm_granted">✅ Exakte Alarme erlaubt</string>
+    <string name="permission_alarm_denied">⚠️ Exakte Alarme nicht erlaubt</string>
+    <string name="permission_grant">Berechtigung erteilen</string>
+    
+    <!-- Errors -->
+    <string name="error_generic">Ein Fehler ist aufgetreten</string>
+    <string name="error_network">Netzwerkfehler</string>
+    <string name="error_no_stations">Bitte Bahnhöfe auswählen</string>
+    
+    <!-- Widget Config -->
+    <string name="widget_config_title">Widget konfigurieren</string>
+    <string name="widget_add">Widget hinzufügen</string>
+    <string name="cancel">Abbrechen</string>
+</resources>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/connection_item_background"
+    android:padding="6dp">
+
+    <!-- Train info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/conn1_train"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="🚄 ICE 123" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/conn1_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp"
+                tools:text="Ab: 07:23  An: 07:45" />
+
+            <TextView
+                android:id="@+id/conn1_platform"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/widget_accent"
+                android:textSize="11sp"
+                tools:text="Gl. 5" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Alarm buttons -->
+    <Button
+        android:id="@+id/conn1_alarm_10"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:minWidth="48dp"
+        android:text="⏰-10"
+        android:textSize="10sp"
+        android:background="@drawable/alarm_button_background"
+        android:textColor="@color/white"
+        android:padding="4dp" />
+
+    <Button
+        android:id="@+id/conn1_alarm_15"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:minWidth="48dp"
+        android:layout_marginStart="4dp"
+        android:text="⏰-15"
+        android:textSize="10sp"
+        android:background="@drawable/alarm_button_background"
+        android:textColor="@color/white"
+        android:padding="4dp" />
+
+</LinearLayout>

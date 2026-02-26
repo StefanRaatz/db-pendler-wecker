@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp">
+
+    <!-- Header with stations and swap -->
+    <LinearLayout
+        android:id="@+id/widget_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_from_station"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Düsseldorf Hbf" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="↓"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/text_to_station"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/widget_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Köln Hbf" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_swap"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/button_circle"
+            android:src="@drawable/ic_swap"
+            android:contentDescription="Bahnhöfe tauschen"
+            android:scaleType="centerInside"
+            android:padding="8dp" />
+
+        <ImageButton
+            android:id="@+id/btn_refresh"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/button_circle"
+            android:src="@drawable/ic_refresh"
+            android:contentDescription="Aktualisieren"
+            android:scaleType="centerInside"
+            android:padding="8dp" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/widget_divider" />
+
+    <ProgressBar
+        android:id="@+id/progress_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/text_no_connections"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone"
+        tools:text="Keine Verbindungen gefunden" />
+
+    <LinearLayout
+        android:id="@+id/connections_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Connection 1 -->
+        <LinearLayout
+            android:id="@+id/connection_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/connection_item_background"
+            android:padding="6dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/conn1_train"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="🚄 ICE 123" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/conn1_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/widget_text_secondary"
+                        android:textSize="11sp"
+                        tools:text="Ab: 07:23  An: 07:45" />
+
+                    <TextView
+                        android:id="@+id/conn1_platform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textColor="@color/widget_accent"
+                        android:textSize="11sp"
+                        tools:text="Gl. 5" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/conn1_alarm_10"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="48dp"
+                android:text="⏰-10"
+                android:textSize="10sp"
+                android:background="@drawable/alarm_button_background"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/conn1_alarm_15"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="48dp"
+                android:layout_marginStart="4dp"
+                android:text="⏰-15"
+                android:textSize="10sp"
+                android:background="@drawable/alarm_button_background"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+        <!-- Connection 2 -->
+        <LinearLayout
+            android:id="@+id/connection_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/connection_item_background"
+            android:padding="6dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/conn2_train"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="🚆 RE 456" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/conn2_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/widget_text_secondary"
+                        android:textSize="11sp"
+                        tools:text="Ab: 07:38  An: 08:12" />
+
+                    <TextView
+                        android:id="@+id/conn2_platform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textColor="@color/widget_accent"
+                        android:textSize="11sp"
+                        tools:text="Gl. 3" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/conn2_alarm_10"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="48dp"
+                android:text="⏰-10"
+                android:textSize="10sp"
+                android:background="@drawable/alarm_button_background"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/conn2_alarm_15"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="48dp"
+                android:layout_marginStart="4dp"
+                android:text="⏰-15"
+                android:textSize="10sp"
+                android:background="@drawable/alarm_button_background"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+        <!-- Connection 3 -->
+        <LinearLayout
+            android:id="@+id/connection_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/connection_item_background"
+            android:padding="6dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/conn3_train"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/widget_text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="🚄 ICE 789" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/conn3_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/widget_text_secondary"
+                        android:textSize="11sp"
+                        tools:text="Ab: 07:53  An: 08:15" />
+
+                    <TextView
+                        android:id="@+id/conn3_platform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textColor="@color/widget_accent"
+                        android:textSize="11sp"
+                        tools:text="Gl. 7" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/conn3_alarm_10"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="48dp"
+                android:text="⏰-10"
+                android:textSize="10sp"
+                android:background="@drawable/alarm_button_background"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/conn3_alarm_15"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="48dp"
+                android:layout_marginStart="4dp"
+                android:text="⏰-15"
+                android:textSize="10sp"
+                android:background="@drawable/alarm_button_background"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_last_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="10sp"
+        android:layout_marginTop="4dp"
+        tools:text="Aktualisiert: 07:30" />
+
+</LinearLayout>
