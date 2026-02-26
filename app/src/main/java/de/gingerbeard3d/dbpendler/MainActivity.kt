@@ -1,9 +1,14 @@
 package de.gingerbeard3d.dbpendler
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -15,6 +20,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import de.gingerbeard3d.dbpendler.alarm.AlarmHelper
 import de.gingerbeard3d.dbpendler.api.DBApiClient
@@ -53,6 +60,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // Handle system insets for notch/status bar
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+        
         prefsManager = PreferencesManager(this)
         apiClient = DBApiClient()
         alarmHelper = AlarmHelper(this)
@@ -61,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         loadSavedStations()
         observeAlarms()
         requestPermissions()
+        checkBatteryOptimization()
     }
     
     private fun setupUI() {
@@ -122,12 +137,14 @@ class MainActivity : AppCompatActivity() {
         binding.btnCheckAlarmPermission.setOnClickListener {
             if (!alarmHelper.canScheduleExactAlarms()) {
                 alarmHelper.openExactAlarmSettings()
+            } else if (!isIgnoringBatteryOptimizations()) {
+                requestIgnoreBatteryOptimization()
             } else {
-                Toast.makeText(this, "✅ Exakte Alarme sind bereits erlaubt", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "✅ Alle Berechtigungen erteilt", Toast.LENGTH_SHORT).show()
             }
         }
         
-        updateAlarmPermissionStatus()
+        updatePermissionStatus()
     }
     
     private fun hideKeyboard() {
@@ -135,6 +152,39 @@ class MainActivity : AppCompatActivity() {
         currentFocus?.let {
             imm.hideSoftInputFromWindow(it.windowToken, 0)
             it.clearFocus()
+        }
+    }
+    
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
+    }
+    
+    private fun requestIgnoreBatteryOptimization() {
+        try {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                data = Uri.parse("package:$packageName")
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback to battery optimization settings
+            try {
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                startActivity(intent)
+            } catch (e2: Exception) {
+                Toast.makeText(this, "Bitte manuell in Einstellungen → Akku → App deaktivieren", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
+    private fun checkBatteryOptimization() {
+        if (!isIgnoringBatteryOptimizations()) {
+            // Show a hint to the user
+            Toast.makeText(
+                this, 
+                "⚠️ Für zuverlässige Alarme: Bitte Akku-Optimierung deaktivieren", 
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
     
@@ -373,13 +423,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun updateAlarmPermissionStatus() {
-        if (alarmHelper.canScheduleExactAlarms()) {
-            binding.textAlarmPermission.text = "✅ Exakte Alarme erlaubt"
-            binding.btnCheckAlarmPermission.visibility = View.GONE
-        } else {
-            binding.textAlarmPermission.text = "⚠️ Exakte Alarme nicht erlaubt"
-            binding.btnCheckAlarmPermission.visibility = View.VISIBLE
+    private fun updatePermissionStatus() {
+        val alarmOk = alarmHelper.canScheduleExactAlarms()
+        val batteryOk = isIgnoringBatteryOptimizations()
+        
+        when {
+            alarmOk && batteryOk -> {
+                binding.textAlarmPermission.text = "✅ Alle Berechtigungen erteilt"
+                binding.btnCheckAlarmPermission.visibility = View.GONE
+            }
+            !alarmOk -> {
+                binding.textAlarmPermission.text = "⚠️ Exakte Alarme nicht erlaubt"
+                binding.btnCheckAlarmPermission.text = "Erlauben"
+                binding.btnCheckAlarmPermission.visibility = View.VISIBLE
+            }
+            !batteryOk -> {
+                binding.textAlarmPermission.text = "⚠️ Akku-Optimierung aktiv (Alarme unzuverlässig!)"
+                binding.btnCheckAlarmPermission.text = "Deaktivieren"
+                binding.btnCheckAlarmPermission.visibility = View.VISIBLE
+            }
         }
     }
     
@@ -399,7 +461,7 @@ class MainActivity : AppCompatActivity() {
     
     override fun onResume() {
         super.onResume()
-        updateAlarmPermissionStatus()
+        updatePermissionStatus()
         // Refresh alarm list (cleanup expired)
         lifecycleScope.launch {
             prefsManager.cleanupExpiredAlarms()

@@ -7,5 +7,8 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="android:statusBarColor">@color/primary</item>
         <item name="android:windowBackground">@color/background</item>
+        <!-- Ensure content doesn't overlap with system bars -->
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
