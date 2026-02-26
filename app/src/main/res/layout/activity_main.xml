@@ -158,13 +158,12 @@
                         android:id="@+id/btn_refresh"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🔄 Aktualisieren"
-                        android:backgroundTint="@android:color/transparent"
-                        android:textColor="@color/primary"
-                        android:textSize="12sp"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="8dp" />
+                        android:text="🔄"
+                        android:backgroundTint="@color/primary"
+                        android:textColor="@color/white"
+                        android:minWidth="48dp"
+                        android:minHeight="36dp"
+                        android:padding="4dp" />
 
                 </LinearLayout>
 
@@ -181,6 +180,40 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:visibility="gone" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Active Alarms Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_alarms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⏰ Aktive Wecker"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/alarms_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
 
             </LinearLayout>
 

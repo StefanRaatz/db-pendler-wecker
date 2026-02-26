@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginVertical="4dp"
     app:cardElevation="2dp"
-    app:cardCornerRadius="8dp">
+    app:cardCornerRadius="8dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,14 +29,15 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                tools:text="🚄 ICE 123" />
+                android:textColor="#212121"
+                tools:text="🚆 RE5" />
 
             <TextView
                 android:id="@+id/text_times"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:textColor="@color/text_secondary"
+                android:textColor="#757575"
                 tools:text="Ab: 07:23  An: 07:45" />
 
             <TextView
@@ -43,7 +45,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="@color/primary"
+                android:textColor="#E30613"
+                android:textStyle="bold"
                 tools:text="Gleis 5" />
 
         </LinearLayout>
@@ -52,30 +55,31 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center">
 
             <Button
                 android:id="@+id/btn_alarm_10"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
                 android:text="⏰ -10"
-                android:textSize="11sp"
-                android:backgroundTint="@color/primary"
-                android:textColor="@color/white"
-                android:minWidth="72dp"
-                android:paddingHorizontal="12dp" />
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#E30613"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
 
             <Button
                 android:id="@+id/btn_alarm_15"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginTop="4dp"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="6dp"
                 android:text="⏰ -15"
-                android:textSize="11sp"
-                android:backgroundTint="@color/primary"
-                android:textColor="@color/white"
-                android:minWidth="72dp"
-                android:paddingHorizontal="12dp" />
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#E30613"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
 
         </LinearLayout>
 

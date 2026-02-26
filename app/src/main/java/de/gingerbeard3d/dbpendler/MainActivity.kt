@@ -7,7 +7,10 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,11 +20,12 @@ import de.gingerbeard3d.dbpendler.alarm.AlarmHelper
 import de.gingerbeard3d.dbpendler.api.DBApiClient
 import de.gingerbeard3d.dbpendler.api.Station
 import de.gingerbeard3d.dbpendler.data.PreferencesManager
+import de.gingerbeard3d.dbpendler.data.SavedAlarm
 import de.gingerbeard3d.dbpendler.databinding.ActivityMainBinding
 import de.gingerbeard3d.dbpendler.widget.PendlerWidgetProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -55,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         
         setupUI()
         loadSavedStations()
+        observeAlarms()
         requestPermissions()
     }
     
@@ -75,6 +80,9 @@ class MainActivity : AppCompatActivity() {
             if (position < fromStations.size) {
                 selectedFromStation = fromStations[position]
                 saveFromStation()
+                // Close dropdown and hide keyboard
+                binding.editFromStation.dismissDropDown()
+                hideKeyboard()
             }
         }
         
@@ -94,6 +102,9 @@ class MainActivity : AppCompatActivity() {
             if (position < toStations.size) {
                 selectedToStation = toStations[position]
                 saveToStation()
+                // Close dropdown and hide keyboard
+                binding.editToStation.dismissDropDown()
+                hideKeyboard()
             }
         }
         
@@ -119,6 +130,49 @@ class MainActivity : AppCompatActivity() {
         updateAlarmPermissionStatus()
     }
     
+    private fun hideKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        currentFocus?.let {
+            imm.hideSoftInputFromWindow(it.windowToken, 0)
+            it.clearFocus()
+        }
+    }
+    
+    private fun observeAlarms() {
+        lifecycleScope.launch {
+            prefsManager.savedAlarmsFlow.collectLatest { alarms ->
+                displayAlarms(alarms.filter { it.alarmTimeMillis > System.currentTimeMillis() })
+            }
+        }
+    }
+    
+    private fun displayAlarms(alarms: List<SavedAlarm>) {
+        if (alarms.isEmpty()) {
+            binding.cardAlarms.visibility = View.GONE
+            return
+        }
+        
+        binding.cardAlarms.visibility = View.VISIBLE
+        binding.alarmsContainer.removeAllViews()
+        
+        for (alarm in alarms) {
+            val alarmView = layoutInflater.inflate(R.layout.item_alarm, binding.alarmsContainer, false)
+            
+            alarmView.findViewById<TextView>(R.id.text_alarm_time).text = alarm.alarmTime
+            alarmView.findViewById<TextView>(R.id.text_train_info).text = 
+                "🚆 ${alarm.trainName} um ${alarm.departureTime}"
+            alarmView.findViewById<TextView>(R.id.text_route).text = 
+                "${alarm.fromStation} → ${alarm.toStation}"
+            
+            alarmView.findViewById<ImageButton>(R.id.btn_delete_alarm).setOnClickListener {
+                alarmHelper.cancelAlarm(alarm.id)
+                // UI updates via flow observer
+            }
+            
+            binding.alarmsContainer.addView(alarmView)
+        }
+    }
+    
     private fun loadSavedStations() {
         lifecycleScope.launch {
             val (from, to) = prefsManager.getStations()
@@ -136,6 +190,9 @@ class MainActivity : AppCompatActivity() {
             if (from != null && to != null) {
                 refreshConnections()
             }
+            
+            // Cleanup expired alarms
+            prefsManager.cleanupExpiredAlarms()
         }
     }
     
@@ -156,7 +213,9 @@ class MainActivity : AppCompatActivity() {
                     )
                     binding.editFromStation.setAdapter(adapter)
                     adapter.notifyDataSetChanged()
-                    binding.editFromStation.showDropDown()
+                    if (binding.editFromStation.hasFocus()) {
+                        binding.editFromStation.showDropDown()
+                    }
                 },
                 onFailure = { error ->
                     Toast.makeText(this@MainActivity, "Fehler: ${error.message}", Toast.LENGTH_SHORT).show()
@@ -184,7 +243,9 @@ class MainActivity : AppCompatActivity() {
                     )
                     binding.editToStation.setAdapter(adapter)
                     adapter.notifyDataSetChanged()
-                    binding.editToStation.showDropDown()
+                    if (binding.editToStation.hasFocus()) {
+                        binding.editToStation.showDropDown()
+                    }
                 },
                 onFailure = { error ->
                     Toast.makeText(this@MainActivity, "Fehler: ${error.message}", Toast.LENGTH_SHORT).show()
@@ -339,5 +400,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateAlarmPermissionStatus()
+        // Refresh alarm list (cleanup expired)
+        lifecycleScope.launch {
+            prefsManager.cleanupExpiredAlarms()
+        }
     }
 }

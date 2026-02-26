@@ -7,13 +7,21 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import de.gingerbeard3d.dbpendler.data.PreferencesManager
+import de.gingerbeard3d.dbpendler.data.SavedAlarm
 import de.gingerbeard3d.dbpendler.receiver.AlarmReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 class AlarmHelper(private val context: Context) {
     
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    private val prefsManager = PreferencesManager(context)
     
     /**
      * Set an alarm for a specific train departure
@@ -22,6 +30,7 @@ class AlarmHelper(private val context: Context) {
      * @param trainName Name of the train (for notification)
      * @param fromStation Departure station
      * @param toStation Arrival station
+     * @return The alarm ID if successful, null otherwise
      */
     fun setAlarm(
         departureTime: LocalDateTime,
@@ -29,7 +38,7 @@ class AlarmHelper(private val context: Context) {
         trainName: String,
         fromStation: String,
         toStation: String
-    ): Boolean {
+    ): String? {
         // Calculate alarm time
         val alarmTime = departureTime.minusMinutes(minutesBefore.toLong())
         val alarmMillis = alarmTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -37,7 +46,7 @@ class AlarmHelper(private val context: Context) {
         // Check if alarm time is in the future
         if (alarmMillis <= System.currentTimeMillis()) {
             Toast.makeText(context, "⚠️ Abfahrt liegt in der Vergangenheit!", Toast.LENGTH_SHORT).show()
-            return false
+            return null
         }
         
         // Check for exact alarm permission on Android 12+
@@ -47,13 +56,17 @@ class AlarmHelper(private val context: Context) {
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
-                return false
+                return null
             }
         }
+        
+        // Generate unique alarm ID
+        val alarmId = UUID.randomUUID().toString()
         
         // Create intent for alarm receiver
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             action = "de.gingerbeard3d.dbpendler.ALARM_TRIGGERED"
+            putExtra("alarm_id", alarmId)
             putExtra("train_name", trainName)
             putExtra("departure_time", departureTime.toString())
             putExtra("from_station", fromStation)
@@ -61,8 +74,8 @@ class AlarmHelper(private val context: Context) {
             putExtra("minutes_before", minutesBefore)
         }
         
-        // Create unique request code based on departure time
-        val requestCode = departureTime.hashCode()
+        // Create unique request code based on alarm ID
+        val requestCode = alarmId.hashCode()
         
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -87,22 +100,64 @@ class AlarmHelper(private val context: Context) {
                 )
             }
             
-            val alarmTimeStr = alarmTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+            val alarmTimeStr = alarmTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+            val departureTimeStr = departureTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+            
+            // Save alarm to preferences
+            val savedAlarm = SavedAlarm(
+                id = alarmId,
+                trainName = trainName,
+                departureTime = departureTimeStr,
+                alarmTime = alarmTimeStr,
+                alarmTimeMillis = alarmMillis,
+                fromStation = fromStation,
+                toStation = toStation,
+                minutesBefore = minutesBefore
+            )
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                prefsManager.addAlarm(savedAlarm)
+            }
+            
             Toast.makeText(
                 context, 
                 "⏰ Wecker gestellt für $alarmTimeStr\n($minutesBefore Min vor $trainName)", 
                 Toast.LENGTH_LONG
             ).show()
             
-            return true
+            return alarmId
         } catch (e: SecurityException) {
             Toast.makeText(context, "Fehler: Keine Berechtigung für Wecker", Toast.LENGTH_LONG).show()
-            return false
+            return null
         }
     }
     
     /**
-     * Cancel an alarm
+     * Cancel an alarm by ID
+     */
+    fun cancelAlarm(alarmId: String) {
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val requestCode = alarmId.hashCode()
+        
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        alarmManager.cancel(pendingIntent)
+        
+        // Remove from saved alarms
+        CoroutineScope(Dispatchers.IO).launch {
+            prefsManager.removeAlarm(alarmId)
+        }
+        
+        Toast.makeText(context, "⏰ Wecker gelöscht", Toast.LENGTH_SHORT).show()
+    }
+    
+    /**
+     * Cancel an alarm by departure time (legacy)
      */
     fun cancelAlarm(departureTime: LocalDateTime) {
         val intent = Intent(context, AlarmReceiver::class.java)

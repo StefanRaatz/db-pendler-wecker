@@ -10,6 +10,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.time.LocalDateTime
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "pendler_settings")
 
@@ -24,9 +28,12 @@ class PreferencesManager(private val context: Context) {
         
         // Alarm settings
         private val DEFAULT_ALARM_MINUTES = intPreferencesKey("default_alarm_minutes")
+        private val SAVED_ALARMS = stringPreferencesKey("saved_alarms")
         
         // Widget ID tracking
         private val ACTIVE_WIDGET_IDS = stringPreferencesKey("active_widget_ids")
+        
+        private val json = Json { ignoreUnknownKeys = true }
     }
     
     // Flow for from station
@@ -46,6 +53,16 @@ class PreferencesManager(private val context: Context) {
     // Flow for default alarm minutes
     val defaultAlarmMinutesFlow: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[DEFAULT_ALARM_MINUTES] ?: 10
+    }
+    
+    // Flow for saved alarms
+    val savedAlarmsFlow: Flow<List<SavedAlarm>> = context.dataStore.data.map { prefs ->
+        val alarmsJson = prefs[SAVED_ALARMS] ?: "[]"
+        try {
+            json.decodeFromString<List<SavedAlarm>>(alarmsJson)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
     
     // Save from station
@@ -97,6 +114,73 @@ class PreferencesManager(private val context: Context) {
         }
     }
     
+    // Add alarm to saved list
+    suspend fun addAlarm(alarm: SavedAlarm) {
+        context.dataStore.edit { prefs ->
+            val currentJson = prefs[SAVED_ALARMS] ?: "[]"
+            val alarms = try {
+                json.decodeFromString<MutableList<SavedAlarm>>(currentJson)
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+            
+            // Remove expired alarms and add new one
+            val now = System.currentTimeMillis()
+            alarms.removeAll { it.alarmTimeMillis < now }
+            alarms.add(alarm)
+            
+            // Sort by alarm time
+            alarms.sortBy { it.alarmTimeMillis }
+            
+            prefs[SAVED_ALARMS] = json.encodeToString(alarms)
+        }
+    }
+    
+    // Remove alarm from saved list
+    suspend fun removeAlarm(alarmId: String) {
+        context.dataStore.edit { prefs ->
+            val currentJson = prefs[SAVED_ALARMS] ?: "[]"
+            val alarms = try {
+                json.decodeFromString<MutableList<SavedAlarm>>(currentJson)
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+            
+            alarms.removeAll { it.id == alarmId }
+            prefs[SAVED_ALARMS] = json.encodeToString(alarms)
+        }
+    }
+    
+    // Get all saved alarms (sync)
+    suspend fun getSavedAlarms(): List<SavedAlarm> {
+        val prefs = context.dataStore.data.first()
+        val alarmsJson = prefs[SAVED_ALARMS] ?: "[]"
+        return try {
+            val alarms = json.decodeFromString<MutableList<SavedAlarm>>(alarmsJson)
+            // Filter out expired alarms
+            val now = System.currentTimeMillis()
+            alarms.filter { it.alarmTimeMillis >= now }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    // Clear expired alarms
+    suspend fun cleanupExpiredAlarms() {
+        context.dataStore.edit { prefs ->
+            val currentJson = prefs[SAVED_ALARMS] ?: "[]"
+            val alarms = try {
+                json.decodeFromString<MutableList<SavedAlarm>>(currentJson)
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+            
+            val now = System.currentTimeMillis()
+            alarms.removeAll { it.alarmTimeMillis < now }
+            prefs[SAVED_ALARMS] = json.encodeToString(alarms)
+        }
+    }
+    
     // Get current stations synchronously (for widget updates)
     suspend fun getStations(): Pair<StationData?, StationData?> {
         val prefs = context.dataStore.data.first()
@@ -141,4 +225,16 @@ class PreferencesManager(private val context: Context) {
 data class StationData(
     val id: String,
     val name: String
+)
+
+@Serializable
+data class SavedAlarm(
+    val id: String,
+    val trainName: String,
+    val departureTime: String,
+    val alarmTime: String,
+    val alarmTimeMillis: Long,
+    val fromStation: String,
+    val toStation: String,
+    val minutesBefore: Int
 )
