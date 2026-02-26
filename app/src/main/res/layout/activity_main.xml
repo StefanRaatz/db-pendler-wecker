@@ -79,15 +79,15 @@
                 </LinearLayout>
 
                 <!-- Swap Button -->
-                <com.google.android.material.button.MaterialButton
+                <Button
                     android:id="@+id/btn_swap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginVertical="8dp"
                     android:text="🔄 Tauschen"
-                    app:icon="@drawable/ic_swap"
-                    style="@style/Widget.Material3.Button.TonalButton" />
+                    android:backgroundTint="@color/secondary"
+                    android:textColor="@color/white" />
 
                 <!-- To Station -->
                 <LinearLayout
@@ -150,17 +150,21 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Verbindungen"
+                        android:text="Nächste Verbindungen:"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <com.google.android.material.button.MaterialButton
+                    <Button
                         android:id="@+id/btn_refresh"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Aktualisieren"
-                        app:icon="@drawable/ic_refresh"
-                        style="@style/Widget.Material3.Button.TextButton" />
+                        android:text="🔄 Aktualisieren"
+                        android:backgroundTint="@android:color/transparent"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:padding="8dp" />
 
                 </LinearLayout>
 
@@ -210,14 +214,15 @@
                     android:text="⏰ Alarm-Status wird geprüft..."
                     android:textSize="14sp" />
 
-                <com.google.android.material.button.MaterialButton
+                <Button
                     android:id="@+id/btn_check_alarm_permission"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Berechtigung erteilen"
                     android:visibility="gone"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
+                    android:backgroundTint="@color/primary"
+                    android:textColor="@color/white" />
 
             </LinearLayout>
 

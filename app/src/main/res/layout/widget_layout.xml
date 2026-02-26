@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_background"
     android:padding="12dp">
 
-    <!-- Header with stations and swap -->
+    <!-- Header with stations -->
     <LinearLayout
         android:id="@+id/widget_header"
         android:layout_width="match_parent"
@@ -25,49 +24,49 @@
                 android:id="@+id/text_from_station"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/widget_text_primary"
+                android:textColor="#212121"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
-                tools:text="Düsseldorf Hbf" />
+                android:text="Von" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="↓"
-                android:textColor="@color/widget_text_secondary"
+                android:textColor="#757575"
                 android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/text_to_station"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/widget_text_primary"
+                android:textColor="#212121"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
-                tools:text="Köln Hbf" />
+                android:text="Nach" />
 
         </LinearLayout>
 
         <ImageButton
             android:id="@+id/btn_swap"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/button_circle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="#1E88E5"
             android:src="@drawable/ic_swap"
-            android:contentDescription="Bahnhöfe tauschen"
+            android:contentDescription="Tauschen"
             android:scaleType="centerInside"
             android:padding="8dp" />
 
         <ImageButton
             android:id="@+id/btn_refresh"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginStart="8dp"
-            android:background="@drawable/button_circle"
+            android:background="#E30613"
             android:src="@drawable/ic_refresh"
             android:contentDescription="Aktualisieren"
             android:scaleType="centerInside"
@@ -79,7 +78,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginVertical="8dp"
-        android:background="@color/widget_divider" />
+        android:background="#E0E0E0" />
 
     <ProgressBar
         android:id="@+id/progress_loading"
@@ -93,10 +92,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textColor="@color/widget_text_secondary"
+        android:textColor="#757575"
         android:textSize="12sp"
         android:visibility="gone"
-        tools:text="Keine Verbindungen gefunden" />
+        android:text="Keine Verbindungen" />
 
     <LinearLayout
         android:id="@+id/connections_container"
@@ -112,7 +111,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="@drawable/connection_item_background"
+            android:background="#F5F5F5"
             android:padding="6dp">
 
             <LinearLayout
@@ -125,10 +124,10 @@
                     android:id="@+id/conn1_train"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/widget_text_primary"
+                    android:textColor="#212121"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    tools:text="🚄 ICE 123" />
+                    android:text="🚆 Zug" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -139,43 +138,45 @@
                         android:id="@+id/conn1_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/widget_text_secondary"
+                        android:textColor="#757575"
                         android:textSize="11sp"
-                        tools:text="Ab: 07:23  An: 07:45" />
+                        android:text="Ab: --:--" />
 
                     <TextView
                         android:id="@+id/conn1_platform"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:textColor="@color/widget_accent"
+                        android:textColor="#E30613"
                         android:textSize="11sp"
-                        tools:text="Gl. 5" />
+                        android:text="" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
-            <Button
+            <TextView
                 android:id="@+id/conn1_alarm_10"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="48dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
                 android:text="⏰-10"
                 android:textSize="10sp"
-                android:background="@drawable/alarm_button_background"
-                android:textColor="@color/white" />
+                android:background="#E30613"
+                android:textColor="#FFFFFF" />
 
-            <Button
+            <TextView
                 android:id="@+id/conn1_alarm_15"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="48dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
                 android:layout_marginStart="4dp"
                 android:text="⏰-15"
                 android:textSize="10sp"
-                android:background="@drawable/alarm_button_background"
-                android:textColor="@color/white" />
+                android:background="#E30613"
+                android:textColor="#FFFFFF" />
 
         </LinearLayout>
 
@@ -187,7 +188,7 @@
             android:layout_marginTop="4dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="@drawable/connection_item_background"
+            android:background="#F5F5F5"
             android:padding="6dp">
 
             <LinearLayout
@@ -200,10 +201,10 @@
                     android:id="@+id/conn2_train"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/widget_text_primary"
+                    android:textColor="#212121"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    tools:text="🚆 RE 456" />
+                    android:text="🚆 Zug" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -214,43 +215,45 @@
                         android:id="@+id/conn2_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/widget_text_secondary"
+                        android:textColor="#757575"
                         android:textSize="11sp"
-                        tools:text="Ab: 07:38  An: 08:12" />
+                        android:text="Ab: --:--" />
 
                     <TextView
                         android:id="@+id/conn2_platform"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:textColor="@color/widget_accent"
+                        android:textColor="#E30613"
                         android:textSize="11sp"
-                        tools:text="Gl. 3" />
+                        android:text="" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
-            <Button
+            <TextView
                 android:id="@+id/conn2_alarm_10"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="48dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
                 android:text="⏰-10"
                 android:textSize="10sp"
-                android:background="@drawable/alarm_button_background"
-                android:textColor="@color/white" />
+                android:background="#E30613"
+                android:textColor="#FFFFFF" />
 
-            <Button
+            <TextView
                 android:id="@+id/conn2_alarm_15"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="48dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
                 android:layout_marginStart="4dp"
                 android:text="⏰-15"
                 android:textSize="10sp"
-                android:background="@drawable/alarm_button_background"
-                android:textColor="@color/white" />
+                android:background="#E30613"
+                android:textColor="#FFFFFF" />
 
         </LinearLayout>
 
@@ -262,7 +265,7 @@
             android:layout_marginTop="4dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="@drawable/connection_item_background"
+            android:background="#F5F5F5"
             android:padding="6dp">
 
             <LinearLayout
@@ -275,10 +278,10 @@
                     android:id="@+id/conn3_train"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/widget_text_primary"
+                    android:textColor="#212121"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    tools:text="🚄 ICE 789" />
+                    android:text="🚆 Zug" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -289,43 +292,45 @@
                         android:id="@+id/conn3_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/widget_text_secondary"
+                        android:textColor="#757575"
                         android:textSize="11sp"
-                        tools:text="Ab: 07:53  An: 08:15" />
+                        android:text="Ab: --:--" />
 
                     <TextView
                         android:id="@+id/conn3_platform"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:textColor="@color/widget_accent"
+                        android:textColor="#E30613"
                         android:textSize="11sp"
-                        tools:text="Gl. 7" />
+                        android:text="" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
-            <Button
+            <TextView
                 android:id="@+id/conn3_alarm_10"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="48dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
                 android:text="⏰-10"
                 android:textSize="10sp"
-                android:background="@drawable/alarm_button_background"
-                android:textColor="@color/white" />
+                android:background="#E30613"
+                android:textColor="#FFFFFF" />
 
-            <Button
+            <TextView
                 android:id="@+id/conn3_alarm_15"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="48dp"
+                android:layout_height="28dp"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"
                 android:layout_marginStart="4dp"
                 android:text="⏰-15"
                 android:textSize="10sp"
-                android:background="@drawable/alarm_button_background"
-                android:textColor="@color/white" />
+                android:background="#E30613"
+                android:textColor="#FFFFFF" />
 
         </LinearLayout>
 
@@ -336,9 +341,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="end"
-        android:textColor="@color/widget_text_secondary"
+        android:textColor="#757575"
         android:textSize="10sp"
         android:layout_marginTop="4dp"
-        tools:text="Aktualisiert: 07:30" />
+        android:text="" />
 
 </LinearLayout>

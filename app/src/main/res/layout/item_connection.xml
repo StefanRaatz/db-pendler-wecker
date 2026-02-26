@@ -58,18 +58,24 @@
                 android:id="@+id/btn_alarm_10"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:text="⏰ -10 Min"
-                android:textSize="12sp"
-                style="@style/Widget.Material3.Button.TonalButton" />
+                android:text="⏰ -10"
+                android:textSize="11sp"
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"
+                android:minWidth="72dp"
+                android:paddingHorizontal="12dp" />
 
             <Button
                 android:id="@+id/btn_alarm_15"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:layout_marginTop="4dp"
-                android:text="⏰ -15 Min"
-                android:textSize="12sp"
-                style="@style/Widget.Material3.Button.TonalButton" />
+                android:text="⏰ -15"
+                android:textSize="11sp"
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"
+                android:minWidth="72dp"
+                android:paddingHorizontal="12dp" />
 
         </LinearLayout>
 
