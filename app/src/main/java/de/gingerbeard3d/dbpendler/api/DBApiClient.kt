@@ -13,10 +13,11 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 /**
- * Client for Deutsche Bahn API via db-vendo-client REST service
- * Uses the community-maintained wrapper for accurate journey data
+ * Client for Deutsche Bahn API via transport.rest
+ * Uses db-vendo-client with dbnav profile for accurate journey data
  * 
- * API Docs: https://github.com/public-transport/db-vendo-client
+ * API Docs: https://v6.db.transport.rest/
+ * Source: https://github.com/public-transport/db-vendo-client
  */
 class DBApiClient {
     
@@ -30,20 +31,19 @@ class DBApiClient {
         isLenient = true
     }
     
-    // API endpoints
-    // Station search: DB internal API (faster, works well)
-    private val stationSearchUrl = "https://int.bahn.de/web/api/reiseloesung"
-    // Journeys: transport.rest (accurate arrival times)
-    private val journeysUrl = "https://v6.db.transport.rest"
+    // transport.rest API (uses dbnav profile internally)
+    private val baseUrl = "https://v6.db.transport.rest"
     
     /**
      * Search for stations by name
-     * Uses DB internal API (same as before, reliable)
+     * Uses /locations endpoint
      */
     suspend fun searchStations(query: String): Result<List<Station>> = withContext(Dispatchers.IO) {
         try {
             val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            val url = "$stationSearchUrl/orte?suchbegriff=$encodedQuery&typ=ALL&limit=10"
+            val url = "$baseUrl/locations?query=$encodedQuery&results=10&stations=true&poi=false&addresses=false"
+            
+            Log.d("DBApiClient", "Searching stations: $url")
             
             val request = Request.Builder()
                 .url(url)
@@ -52,6 +52,7 @@ class DBApiClient {
             
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
+                    Log.e("DBApiClient", "Station search failed: ${response.code}")
                     return@withContext Result.failure(Exception("API error: ${response.code}"))
                 }
                 
@@ -64,17 +65,19 @@ class DBApiClient {
                         val loc = locElement.jsonObject
                         val type = loc["type"]?.jsonPrimitive?.contentOrNull ?: ""
                         
-                        // Only include stations (ST)
-                        if (type != "ST") return@mapNotNull null
+                        // Only include stations and stops
+                        if (type != "station" && type != "stop") return@mapNotNull null
                         
                         val name = loc["name"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
-                        val extId = loc["extId"]?.jsonPrimitive?.contentOrNull ?: ""
-                        val id = loc["id"]?.jsonPrimitive?.contentOrNull ?: extId
+                        val id = loc["id"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+                        
+                        // For stops with parent station, use parent station ID for routing
+                        val parentStationId = loc["station"]?.jsonObject?.get("id")?.jsonPrimitive?.contentOrNull
                         
                         Station(
                             value = name,
-                            id = id,
-                            extId = extId,
+                            id = parentStationId ?: id,
+                            extId = id,
                             type = type
                         )
                     } catch (e: Exception) {
@@ -83,7 +86,7 @@ class DBApiClient {
                     }
                 }
                 
-                Log.d("DBApiClient", "Found ${stations.size} stations for query")
+                Log.d("DBApiClient", "Found ${stations.size} stations")
                 Result.success(stations)
             }
         } catch (e: Exception) {
@@ -110,7 +113,9 @@ class DBApiClient {
             val zonedTime = departureTime.atZone(ZoneId.of("Europe/Berlin"))
             val timeStr = URLEncoder.encode(zonedTime.format(formatter), "UTF-8")
             
-            val url = "$journeysUrl/journeys?from=$fromId&to=$toId&departure=$timeStr&results=10"
+            val url = "$baseUrl/journeys?from=$fromId&to=$toId&departure=$timeStr&results=10"
+            
+            Log.d("DBApiClient", "Getting connections: $url")
             
             val request = Request.Builder()
                 .url(url)
@@ -119,6 +124,7 @@ class DBApiClient {
             
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
+                    Log.e("DBApiClient", "Journeys request failed: ${response.code}")
                     return@withContext Result.failure(Exception("API error: ${response.code}"))
                 }
                 
@@ -134,13 +140,12 @@ class DBApiClient {
                         val legs = journey["legs"]?.jsonArray ?: return@mapNotNull null
                         
                         // For direct connections, use first leg
-                        // TODO: Handle transfers (multiple legs)
                         val firstLeg = legs.firstOrNull()?.jsonObject ?: return@mapNotNull null
                         val lastLeg = legs.lastOrNull()?.jsonObject ?: firstLeg
                         
                         // Parse departure and arrival times
-                        val depTimeStr = firstLeg["departure"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                        val arrTimeStr = lastLeg["arrival"]?.jsonPrimitive?.content ?: return@mapNotNull null
+                        val depTimeStr = firstLeg["departure"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+                        val arrTimeStr = lastLeg["arrival"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
                         
                         val depTime = parseIsoDateTime(depTimeStr)
                         val arrTime = parseIsoDateTime(arrTimeStr)
@@ -152,30 +157,30 @@ class DBApiClient {
                         
                         // Get line info
                         val line = firstLeg["line"]?.jsonObject
-                        val lineName = line?.get("name")?.jsonPrimitive?.content 
-                            ?: line?.get("productName")?.jsonPrimitive?.content
+                        val lineName = line?.get("name")?.jsonPrimitive?.contentOrNull 
+                            ?: line?.get("productName")?.jsonPrimitive?.contentOrNull
                             ?: "Zug"
                         
-                        val productName = line?.get("productName")?.jsonPrimitive?.content ?: ""
+                        val productName = line?.get("productName")?.jsonPrimitive?.contentOrNull ?: ""
                         
                         // Get platform
-                        val platform = firstLeg["departurePlatform"]?.jsonPrimitive?.content 
-                            ?: firstLeg["plannedDeparturePlatform"]?.jsonPrimitive?.content
+                        val platform = firstLeg["departurePlatform"]?.jsonPrimitive?.contentOrNull 
+                            ?: firstLeg["plannedDeparturePlatform"]?.jsonPrimitive?.contentOrNull
                             ?: ""
                         
                         // Get station names
                         val originObj = firstLeg["origin"]?.jsonObject
                         val destObj = lastLeg["destination"]?.jsonObject
                         
-                        val originName = originObj?.get("name")?.jsonPrimitive?.content
-                            ?: originObj?.get("station")?.jsonObject?.get("name")?.jsonPrimitive?.content
+                        val originName = originObj?.get("name")?.jsonPrimitive?.contentOrNull
+                            ?: originObj?.get("station")?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull
                             ?: "Start"
-                        val destName = destObj?.get("name")?.jsonPrimitive?.content
-                            ?: destObj?.get("station")?.jsonObject?.get("name")?.jsonPrimitive?.content
+                        val destName = destObj?.get("name")?.jsonPrimitive?.contentOrNull
+                            ?: destObj?.get("station")?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull
                             ?: "Ziel"
                         
                         // Get tripId
-                        val tripId = firstLeg["tripId"]?.jsonPrimitive?.content ?: "${depTime}_$lineName"
+                        val tripId = firstLeg["tripId"]?.jsonPrimitive?.contentOrNull ?: "${depTime}_$lineName"
                         
                         // Determine train icon
                         val trainIcon = getTrainIcon(lineName, productName)
@@ -200,14 +205,17 @@ class DBApiClient {
                             departureDateTime = depTime
                         )
                     } catch (e: Exception) {
+                        Log.e("DBApiClient", "Error parsing journey: ${e.message}")
                         null
                     }
                 }
                 
-                // Return first 5 direct or minimal-transfer connections
+                Log.d("DBApiClient", "Found ${connections.size} connections")
+                // Return first 5 connections
                 Result.success(connections.take(5))
             }
         } catch (e: Exception) {
+            Log.e("DBApiClient", "getConnections error: ${e.message}", e)
             Result.failure(e)
         }
     }
