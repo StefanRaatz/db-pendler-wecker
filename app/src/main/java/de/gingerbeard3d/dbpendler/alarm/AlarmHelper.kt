@@ -37,7 +37,9 @@ class AlarmHelper(private val context: Context) {
         minutesBefore: Int,
         trainName: String,
         fromStation: String,
-        toStation: String
+        toStation: String,
+        volume: Float = 0.8f,
+        soundUri: String = ""
     ): String? {
         // Calculate alarm time
         val alarmTime = departureTime.minusMinutes(minutesBefore.toLong())
@@ -72,6 +74,8 @@ class AlarmHelper(private val context: Context) {
             putExtra("from_station", fromStation)
             putExtra("to_station", toStation)
             putExtra("minutes_before", minutesBefore)
+            putExtra("volume", volume)
+            putExtra("sound_uri", soundUri)
         }
         
         // Create unique request code based on alarm ID
@@ -112,7 +116,9 @@ class AlarmHelper(private val context: Context) {
                 alarmTimeMillis = alarmMillis,
                 fromStation = fromStation,
                 toStation = toStation,
-                minutesBefore = minutesBefore
+                minutesBefore = minutesBefore,
+                volume = volume,
+                soundUri = soundUri
             )
             
             CoroutineScope(Dispatchers.IO).launch {

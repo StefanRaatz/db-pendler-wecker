@@ -28,6 +28,8 @@ class AlarmReceiver : BroadcastReceiver() {
             val fromStation = intent.getStringExtra("from_station") ?: ""
             val toStation = intent.getStringExtra("to_station") ?: ""
             val minutesBefore = intent.getIntExtra("minutes_before", 10)
+            val volume = intent.getFloatExtra("volume", 0.8f)
+            val soundUri = intent.getStringExtra("sound_uri") ?: ""
             
             // Start the foreground service to handle the alarm
             AlarmService.startAlarm(
@@ -37,7 +39,9 @@ class AlarmReceiver : BroadcastReceiver() {
                 departureTime = departureTime,
                 fromStation = fromStation,
                 toStation = toStation,
-                minutesBefore = minutesBefore
+                minutesBefore = minutesBefore,
+                volume = volume,
+                soundUri = soundUri
             )
         } finally {
             // Wake lock will be released by service or after timeout

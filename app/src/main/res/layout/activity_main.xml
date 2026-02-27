@@ -176,12 +176,36 @@
                     android:layout_gravity="center"
                     android:visibility="gone" />
 
+                <!-- Earlier button -->
+                <Button
+                    android:id="@+id/btn_earlier"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="⬆️ Früher"
+                    android:textColor="@color/primary"
+                    android:backgroundTint="@color/white"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
                 <LinearLayout
                     android:id="@+id/connections_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:visibility="gone" />
+
+                <!-- Later button -->
+                <Button
+                    android:id="@+id/btn_later"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="⬇️ Später"
+                    android:textColor="@color/primary"
+                    android:backgroundTint="@color/white"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             </LinearLayout>
 

@@ -39,6 +39,8 @@ class AlarmService : Service() {
         const val EXTRA_TO_STATION = "to_station"
         const val EXTRA_MINUTES_BEFORE = "minutes_before"
         const val EXTRA_ALARM_ID = "alarm_id"
+        const val EXTRA_VOLUME = "volume"
+        const val EXTRA_SOUND_URI = "sound_uri"
         
         fun startAlarm(
             context: Context,
@@ -47,7 +49,9 @@ class AlarmService : Service() {
             departureTime: String,
             fromStation: String,
             toStation: String,
-            minutesBefore: Int
+            minutesBefore: Int,
+            volume: Float = 0.8f,
+            soundUri: String = ""
         ) {
             val intent = Intent(context, AlarmService::class.java).apply {
                 action = ACTION_START_ALARM
@@ -57,6 +61,8 @@ class AlarmService : Service() {
                 putExtra(EXTRA_FROM_STATION, fromStation)
                 putExtra(EXTRA_TO_STATION, toStation)
                 putExtra(EXTRA_MINUTES_BEFORE, minutesBefore)
+                putExtra(EXTRA_VOLUME, volume)
+                putExtra(EXTRA_SOUND_URI, soundUri)
             }
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -78,6 +84,8 @@ class AlarmService : Service() {
     private var vibrator: Vibrator? = null
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var stopJob: Job? = null
+    private var currentVolume: Float = 0.8f
+    private var currentSoundUri: String = ""
     
     override fun onBind(intent: Intent?): IBinder? = null
     
@@ -95,6 +103,8 @@ class AlarmService : Service() {
                 val fromStation = intent.getStringExtra(EXTRA_FROM_STATION) ?: ""
                 val toStation = intent.getStringExtra(EXTRA_TO_STATION) ?: ""
                 val minutesBefore = intent.getIntExtra(EXTRA_MINUTES_BEFORE, 10)
+                currentVolume = intent.getFloatExtra(EXTRA_VOLUME, 0.8f)
+                currentSoundUri = intent.getStringExtra(EXTRA_SOUND_URI) ?: ""
                 
                 // Start foreground with notification
                 val notification = createAlarmNotification(
@@ -206,8 +216,17 @@ class AlarmService : Service() {
     
     private fun startAlarmSound() {
         try {
-            val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            // Use custom sound URI if provided, otherwise default alarm
+            val alarmUri = if (currentSoundUri.isNotEmpty()) {
+                try {
+                    android.net.Uri.parse(currentSoundUri)
+                } catch (e: Exception) {
+                    null
+                }
+            } else {
+                null
+            } ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+              ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(this@AlarmService, alarmUri)
@@ -218,6 +237,8 @@ class AlarmService : Service() {
                         .build()
                 )
                 isLooping = true
+                // Set volume (0.0 to 1.0 for both left and right channels)
+                setVolume(currentVolume, currentVolume)
                 prepare()
                 start()
             }

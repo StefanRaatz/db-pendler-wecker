@@ -236,5 +236,7 @@ data class SavedAlarm(
     val alarmTimeMillis: Long,
     val fromStation: String,
     val toStation: String,
-    val minutesBefore: Int
+    val minutesBefore: Int,
+    val volume: Float = 0.8f,  // 0.0 to 1.0
+    val soundUri: String = ""  // Empty = default alarm
 )
