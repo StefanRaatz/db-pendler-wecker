@@ -29,9 +29,10 @@ class DBApiClient {
         isLenient = true
     }
     
-    // db-vendo-client REST API endpoint
-    // TODO: Configure via settings
-    private val baseUrl = "https://db-api.thedailygurke.rocks"
+    // Public transport.rest API (community-maintained)
+    // Uses db-vendo-client internally for accurate journey data
+    // Docs: https://v6.db.transport.rest/
+    private val baseUrl = "https://v6.db.transport.rest"
     
     /**
      * Search for stations by name
