@@ -30,19 +30,20 @@ class DBApiClient {
         isLenient = true
     }
     
-    // Public transport.rest API (community-maintained)
-    // Uses db-vendo-client internally for accurate journey data
-    // Docs: https://v6.db.transport.rest/
-    private val baseUrl = "https://v6.db.transport.rest"
+    // API endpoints
+    // Station search: DB internal API (faster, works well)
+    private val stationSearchUrl = "https://int.bahn.de/web/api/reiseloesung"
+    // Journeys: transport.rest (accurate arrival times)
+    private val journeysUrl = "https://v6.db.transport.rest"
     
     /**
      * Search for stations by name
-     * Uses /locations endpoint
+     * Uses DB internal API (same as before, reliable)
      */
     suspend fun searchStations(query: String): Result<List<Station>> = withContext(Dispatchers.IO) {
         try {
             val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            val url = "$baseUrl/locations?query=$encodedQuery&results=10"
+            val url = "$stationSearchUrl/orte?suchbegriff=$encodedQuery&typ=ALL&limit=10"
             
             val request = Request.Builder()
                 .url(url)
@@ -63,31 +64,21 @@ class DBApiClient {
                         val loc = locElement.jsonObject
                         val type = loc["type"]?.jsonPrimitive?.contentOrNull ?: ""
                         
-                        // Only include stations and stops
-                        if (type != "station" && type != "stop") return@mapNotNull null
+                        // Only include stations (ST)
+                        if (type != "ST") return@mapNotNull null
                         
                         val name = loc["name"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
-                        
-                        // ID can be string or number
-                        val idElement = loc["id"]
-                        val id = when {
-                            idElement == null -> return@mapNotNull null
-                            idElement is JsonPrimitive && idElement.isString -> idElement.content
-                            idElement is JsonPrimitive -> idElement.content // handles numbers
-                            else -> return@mapNotNull null
-                        }
-                        
-                        // For stops, prefer the parent station ID if available
-                        val stationId = loc["station"]?.jsonObject?.get("id")?.jsonPrimitive?.contentOrNull ?: id
+                        val extId = loc["extId"]?.jsonPrimitive?.contentOrNull ?: ""
+                        val id = loc["id"]?.jsonPrimitive?.contentOrNull ?: extId
                         
                         Station(
                             value = name,
-                            id = stationId,
-                            extId = id,
+                            id = id,
+                            extId = extId,
                             type = type
                         )
                     } catch (e: Exception) {
-                        android.util.Log.e("DBApiClient", "Error parsing station: ${e.message}")
+                        Log.e("DBApiClient", "Error parsing station: ${e.message}")
                         null
                     }
                 }
@@ -119,7 +110,7 @@ class DBApiClient {
             val zonedTime = departureTime.atZone(ZoneId.of("Europe/Berlin"))
             val timeStr = URLEncoder.encode(zonedTime.format(formatter), "UTF-8")
             
-            val url = "$baseUrl/journeys?from=$fromId&to=$toId&departure=$timeStr&results=10"
+            val url = "$journeysUrl/journeys?from=$fromId&to=$toId&departure=$timeStr&results=10"
             
             val request = Request.Builder()
                 .url(url)
