@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
@@ -16,6 +17,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import de.gingerbeard3d.dbpendler.MainActivity
 import de.gingerbeard3d.dbpendler.R
 import kotlinx.coroutines.*
@@ -110,7 +112,17 @@ class AlarmService : Service() {
                 val notification = createAlarmNotification(
                     trainName, departureTime, fromStation, toStation, minutesBefore
                 )
-                startForeground(NOTIFICATION_ID, notification)
+                
+                // On Android 14+ we must specify the foreground service type
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    startForeground(
+                        NOTIFICATION_ID, 
+                        notification,
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                    )
+                } else {
+                    startForeground(NOTIFICATION_ID, notification)
+                }
                 
                 // Start alarm sound and vibration
                 startAlarmSound()

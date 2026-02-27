@@ -88,21 +88,24 @@ class AlarmHelper(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
-        // Set exact alarm
+        // Set alarm using AlarmClockInfo for highest priority
+        // This ensures the alarm fires even with battery optimization
+        // and shows alarm icon in status bar
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmMillis,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmMillis,
-                    pendingIntent
-                )
+            // Create intent to show when user taps alarm in status bar
+            val showIntent = Intent(context, context.javaClass).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
+            val showPendingIntent = PendingIntent.getActivity(
+                context, 
+                requestCode + 1000, 
+                showIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            // Use setAlarmClock for reliable alarm delivery
+            val alarmClockInfo = AlarmManager.AlarmClockInfo(alarmMillis, showPendingIntent)
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
             
             val alarmTimeStr = alarmTime.format(DateTimeFormatter.ofPattern("HH:mm"))
             val departureTimeStr = departureTime.format(DateTimeFormatter.ofPattern("HH:mm"))
