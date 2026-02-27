@@ -184,6 +184,72 @@ class AlarmHelper(private val context: Context) {
     }
     
     /**
+     * Reschedule an existing alarm with updated settings
+     */
+    fun rescheduleAlarm(alarm: SavedAlarm) {
+        // Check if alarm time is in the future
+        if (alarm.alarmTimeMillis <= System.currentTimeMillis()) {
+            Toast.makeText(context, "⚠️ Alarmzeit liegt in der Vergangenheit!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Check for exact alarm permission on Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Toast.makeText(context, "Bitte erlaube exakte Alarme in den Einstellungen", Toast.LENGTH_LONG).show()
+                return
+            }
+        }
+        
+        // Create intent for alarm receiver
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            action = "de.gingerbeard3d.dbpendler.ALARM_TRIGGERED"
+            putExtra("alarm_id", alarm.id)
+            putExtra("train_name", alarm.trainName)
+            putExtra("departure_time", alarm.departureTime)
+            putExtra("from_station", alarm.fromStation)
+            putExtra("to_station", alarm.toStation)
+            putExtra("minutes_before", alarm.minutesBefore)
+            putExtra("volume", alarm.volume)
+            putExtra("sound_uri", alarm.soundUri)
+        }
+        
+        val requestCode = alarm.id.hashCode()
+        
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        try {
+            // Create intent to show when user taps alarm in status bar
+            val showIntent = Intent(context, context.javaClass).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            val showPendingIntent = PendingIntent.getActivity(
+                context, 
+                requestCode + 1000, 
+                showIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            // Use setAlarmClock for reliable alarm delivery
+            val alarmClockInfo = AlarmManager.AlarmClockInfo(alarm.alarmTimeMillis, showPendingIntent)
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+            
+            // Update alarm in preferences
+            CoroutineScope(Dispatchers.IO).launch {
+                prefsManager.updateAlarm(alarm)
+            }
+            
+        } catch (e: SecurityException) {
+            Toast.makeText(context, "Fehler: Keine Berechtigung für Wecker", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    /**
      * Check if exact alarms are allowed
      */
     fun canScheduleExactAlarms(): Boolean {

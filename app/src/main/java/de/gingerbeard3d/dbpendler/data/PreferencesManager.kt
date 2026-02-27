@@ -33,7 +33,15 @@ class PreferencesManager(private val context: Context) {
         // Widget ID tracking
         private val ACTIVE_WIDGET_IDS = stringPreferencesKey("active_widget_ids")
         
+        // Theme setting: "system", "light", "dark"
+        private val THEME_MODE = stringPreferencesKey("theme_mode")
+        
         private val json = Json { ignoreUnknownKeys = true }
+        
+        // Theme mode constants
+        const val THEME_SYSTEM = "system"
+        const val THEME_LIGHT = "light"
+        const val THEME_DARK = "dark"
     }
     
     // Flow for from station
@@ -62,6 +70,24 @@ class PreferencesManager(private val context: Context) {
             json.decodeFromString<List<SavedAlarm>>(alarmsJson)
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+    
+    // Flow for theme mode
+    val themeModeFlow: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[THEME_MODE] ?: THEME_SYSTEM
+    }
+    
+    // Get theme mode synchronously
+    suspend fun getThemeMode(): String {
+        val prefs = context.dataStore.data.first()
+        return prefs[THEME_MODE] ?: THEME_SYSTEM
+    }
+    
+    // Save theme mode
+    suspend fun saveThemeMode(mode: String) {
+        context.dataStore.edit { prefs ->
+            prefs[THEME_MODE] = mode
         }
     }
     
@@ -149,6 +175,35 @@ class PreferencesManager(private val context: Context) {
             alarms.removeAll { it.id == alarmId }
             prefs[SAVED_ALARMS] = json.encodeToString(alarms)
         }
+    }
+    
+    // Update existing alarm
+    suspend fun updateAlarm(updatedAlarm: SavedAlarm) {
+        context.dataStore.edit { prefs ->
+            val currentJson = prefs[SAVED_ALARMS] ?: "[]"
+            val alarms = try {
+                json.decodeFromString<MutableList<SavedAlarm>>(currentJson)
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+            
+            // Find and replace the alarm with matching id
+            val index = alarms.indexOfFirst { it.id == updatedAlarm.id }
+            if (index >= 0) {
+                alarms[index] = updatedAlarm
+            }
+            
+            // Sort by alarm time
+            alarms.sortBy { it.alarmTimeMillis }
+            
+            prefs[SAVED_ALARMS] = json.encodeToString(alarms)
+        }
+    }
+    
+    // Get single alarm by ID
+    suspend fun getAlarmById(alarmId: String): SavedAlarm? {
+        val alarms = getSavedAlarms()
+        return alarms.find { it.id == alarmId }
     }
     
     // Get all saved alarms (sync)

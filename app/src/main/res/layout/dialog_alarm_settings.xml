@@ -10,9 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="⏰ Alarm-Einstellungen"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/primary"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:textColor="?attr/colorPrimary"
         android:layout_marginBottom="16dp" />
 
     <!-- Train info -->
@@ -20,7 +19,8 @@
         android:id="@+id/text_train_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:textColor="?attr/colorOnSurface"
         android:layout_marginBottom="16dp" />
 
     <!-- Minutes before -->
@@ -28,7 +28,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Minuten vor Abfahrt:"
-        android:textSize="14sp"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:layout_marginBottom="8dp" />
 
     <LinearLayout
@@ -45,7 +46,7 @@
             android:text="5"
             android:textSize="12sp"
             android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_minutes_10"
@@ -54,7 +55,7 @@
             android:text="10"
             android:textSize="12sp"
             android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_minutes_15"
@@ -63,7 +64,7 @@
             android:text="15"
             android:textSize="12sp"
             android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_minutes_20"
@@ -71,7 +72,7 @@
             android:layout_height="40dp"
             android:text="20"
             android:textSize="12sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
     </LinearLayout>
 
@@ -80,7 +81,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Lautstärke:"
-        android:textSize="14sp"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:layout_marginBottom="8dp" />
 
     <LinearLayout
@@ -110,7 +112,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="80%"
-            android:textSize="14sp"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:minWidth="40dp" />
 
     </LinearLayout>
@@ -120,7 +122,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Alarmton:"
-        android:textSize="14sp"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:layout_marginBottom="8dp" />
 
     <Spinner
@@ -132,15 +135,14 @@
         android:layout_marginBottom="24dp" />
 
     <!-- Preview button -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_preview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="🔊 Vorschau"
-        android:textColor="@color/white"
-        android:backgroundTint="@color/secondary"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.Material3.Button.TonalButton" />
 
     <!-- Action buttons -->
     <LinearLayout
@@ -149,21 +151,19 @@
         android:orientation="horizontal"
         android:gravity="end">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Abbrechen"
-            android:textColor="@color/text_secondary"
-            style="@style/Widget.MaterialComponents.Button.TextButton" />
+            style="@style/Widget.Material3.Button.TextButton" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_set_alarm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="⏰ Alarm setzen"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/primary" />
+            style="@style/Widget.Material3.Button" />
 
     </LinearLayout>
 

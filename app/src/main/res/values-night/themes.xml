@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base theme with DB colors -->
-    <style name="Theme.DBPendler" parent="Theme.Material3.Light.NoActionBar">
+    <!-- Base theme in night mode -->
+    <style name="Theme.DBPendler" parent="Theme.DBPendler.Dark" />
+    
+    <!-- Light theme stays light even in night mode -->
+    <style name="Theme.DBPendler.Light" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorPrimaryContainer">@color/primary_light</item>
@@ -20,10 +23,7 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
     
-    <!-- Light theme (explicit) -->
-    <style name="Theme.DBPendler.Light" parent="Theme.DBPendler" />
-    
-    <!-- Dark theme -->
+    <!-- Dark theme in night mode -->
     <style name="Theme.DBPendler.Dark" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/primary_light</item>
         <item name="colorOnPrimary">@color/primary_dark</item>
@@ -43,8 +43,8 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
     
-    <!-- Dynamic color theme (follows system) - Android 12+ -->
-    <style name="Theme.DBPendler.DynamicColors" parent="Theme.Material3.DynamicColors.Light.NoActionBar">
+    <!-- Dynamic color theme follows system -->
+    <style name="Theme.DBPendler.DynamicColors" parent="Theme.Material3.DynamicColors.Dark.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
