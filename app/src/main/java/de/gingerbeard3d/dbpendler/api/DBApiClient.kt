@@ -1,5 +1,6 @@
 package de.gingerbeard3d.dbpendler.api
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
@@ -60,28 +61,42 @@ class DBApiClient {
                 val stations = locations.mapNotNull { locElement ->
                     try {
                         val loc = locElement.jsonObject
-                        val type = loc["type"]?.jsonPrimitive?.content ?: ""
+                        val type = loc["type"]?.jsonPrimitive?.contentOrNull ?: ""
                         
-                        // Only include stations
+                        // Only include stations and stops
                         if (type != "station" && type != "stop") return@mapNotNull null
                         
-                        val name = loc["name"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                        val id = loc["id"]?.jsonPrimitive?.content ?: return@mapNotNull null
+                        val name = loc["name"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+                        
+                        // ID can be string or number
+                        val idElement = loc["id"]
+                        val id = when {
+                            idElement == null -> return@mapNotNull null
+                            idElement is JsonPrimitive && idElement.isString -> idElement.content
+                            idElement is JsonPrimitive -> idElement.content // handles numbers
+                            else -> return@mapNotNull null
+                        }
+                        
+                        // For stops, prefer the parent station ID if available
+                        val stationId = loc["station"]?.jsonObject?.get("id")?.jsonPrimitive?.contentOrNull ?: id
                         
                         Station(
                             value = name,
-                            id = id,
+                            id = stationId,
                             extId = id,
                             type = type
                         )
                     } catch (e: Exception) {
+                        android.util.Log.e("DBApiClient", "Error parsing station: ${e.message}")
                         null
                     }
                 }
                 
+                Log.d("DBApiClient", "Found ${stations.size} stations for query")
                 Result.success(stations)
             }
         } catch (e: Exception) {
+            Log.e("DBApiClient", "searchStations error: ${e.message}", e)
             Result.failure(e)
         }
     }
